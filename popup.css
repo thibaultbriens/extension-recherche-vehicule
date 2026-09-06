@@ -1,0 +1,39 @@
+:root { --ink:#17352c; --paper:#fffdf7; --moss:#246b4b; --line:#d8ded5; --muted:#65766f; }
+* { box-sizing:border-box; }
+body { margin:0; width:430px; max-height:600px; overflow:auto; background:var(--paper); color:var(--ink); font-family:"Avenir Next","Segoe UI",sans-serif; }
+header { position:relative; overflow:hidden; padding:28px 26px 22px; background:linear-gradient(145deg,#dcebe0 0%,#fff8e6 78%); border-bottom:1px solid var(--line); }
+header::after { content:""; position:absolute; width:130px; height:130px; right:-55px; top:-62px; border:20px solid #edb84b2e; border-radius:50%; }
+.route { color:#5c746a; font-size:9px; font-weight:800; letter-spacing:.17em; }
+h1 { margin:8px 0; font:600 30px/1.02 Georgia,serif; letter-spacing:-.03em; }
+header p { max-width:310px; margin:0; color:var(--muted); font-size:12px; line-height:1.5; }
+section { padding:20px 26px; border-bottom:1px solid var(--line); }
+label { display:block; margin-bottom:8px; font-size:12px; font-weight:800; }
+.project-label { margin-top:14px; }
+textarea,input { width:100%; padding:12px; border:1px solid #bec8c0; border-radius:10px; outline:none; background:#fff; color:var(--ink); font:12px/1.5 "Avenir Next","Segoe UI",sans-serif; }
+textarea { min-height:120px; resize:vertical; }
+textarea:focus,input:focus { border-color:var(--moss); box-shadow:0 0 0 3px #246b4b17; }
+.help { margin:6px 1px 0; color:var(--muted); font-size:10px; line-height:1.4; }
+.row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+button { padding:9px 14px; border:0; border-radius:9px; background:var(--ink); color:#fff; cursor:pointer; font:800 11px "Avenir Next","Segoe UI",sans-serif; }
+button:hover { filter:brightness(1.12); }
+#save-status { color:var(--moss); font-size:11px; }
+.history-head { display:flex; align-items:center; justify-content:space-between; padding-bottom:14px; }
+.history-head strong { display:block; margin-top:4px; font:600 18px Georgia,serif; }
+.quiet { border:1px solid var(--line); background:transparent; color:var(--ink); }
+.history { padding:0 26px; }
+.item { padding:14px 0; border-bottom:1px solid #e8ebe5; }
+.item-top { display:flex; gap:8px; align-items:center; }
+.dot { width:9px; height:9px; flex:none; border-radius:50%; }
+.dot.good { background:#2e8b60; }
+.dot.warn { background:#df9c22; }
+.dot.bad { background:#d24d3e; }
+.item a { color:var(--ink); font:700 12px/1.35 "Avenir Next","Segoe UI",sans-serif; text-decoration:none; }
+.item a:hover { text-decoration:underline; }
+.item p { margin:5px 0 0 17px; color:var(--muted); font-size:11px; line-height:1.4; }
+.contact { display:inline-block; margin:8px 0 0 17px; padding:4px 8px; border-radius:999px; font-size:9px; font-weight:800; }
+.contact.waiting { color:#28566a; background:#e3f0f4; border:1px solid #87b4c5; }
+.contact.reply { color:#873810; background:#fff0df; border:1px solid #e19a62; }
+.item-links { display:flex; gap:12px; margin:9px 0 0 17px; }
+.item-links a { color:#246b4b; font-size:10px; font-weight:800; text-decoration:underline; text-underline-offset:2px; }
+.empty { padding:28px 10px; color:var(--muted); font:italic 13px Georgia,serif; text-align:center; }
+.foot { margin:0; padding:10px 0 18px; color:#87958f; font-size:9px; text-align:center; }

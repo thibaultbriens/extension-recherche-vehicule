@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "VanCheck — avis véhicule",
+  "version": "0.4.5",
+  "description": "Analysez une annonce Le Bon Coin avec ChatGPT et retrouvez vos verdicts directement dans les résultats.",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.leboncoin.fr/*",
+    "https://chatgpt.com/*",
+    "https://attachments.messaging.bon-coin.net/*"
+  ],
+  "action": {
+    "default_title": "VanCheck",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.leboncoin.fr/*"
+      ],
+      "js": [
+        "formatting.js",
+        "followup.js",
+        "content.js",
+        "messaging.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://chatgpt.com/*"
+      ],
+      "js": [
+        "followup.js",
+        "chatgpt.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

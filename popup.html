@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VanCheck</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <span class="route">VANCHECK / CARNET D’ACHAT</span>
+      <h1>Votre copilote<br>avant la route.</h1>
+      <p>Des critères constants, des annonces que vous ne réanalysez plus.</p>
+    </header>
+
+    <section>
+      <label for="criteria">Mes critères de recherche</label>
+      <textarea id="criteria" placeholder="Budget, dimensions, kilométrage, usage, moteurs à éviter, points rédhibitoires…"></textarea>
+      <label class="project-label" for="project-url">Lien de mon projet ChatGPT</label>
+      <input id="project-url" type="url" placeholder="https://chatgpt.com/g/g-p-…/project">
+      <p class="help">Ouvre ton projet dans ChatGPT et copie son adresse complète. Le prompt sera placé automatiquement dans un nouveau composeur.</p>
+      <div class="row"><span id="save-status"></span><button id="save">Enregistrer</button></div>
+    </section>
+
+    <section class="history-head">
+      <div><span class="route">HISTORIQUE LOCAL</span><strong id="count">0 annonce</strong></div>
+      <button class="quiet" id="export">Exporter</button>
+    </section>
+    <div id="history" class="history"></div>
+    <p class="foot">Les données restent dans ce navigateur.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
