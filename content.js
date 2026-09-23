@@ -428,27 +428,30 @@ ${VanCheckFollowup.responseFormat}`;
     const shadow = host.attachShadow({ mode: "open" });
     const { criteria = "", projectUrl = "", analyses = {}, chatUrls = {} } = await storageGet(["criteria", "projectUrl", "analyses", "chatUrls"]);
     const saved = analyses[ad.id];
+    const hasAiAnalysis = Boolean(saved && Object.hasOwn(saved, 'aiScore'));
     const conversationUrl = saved?.chatUrl || chatUrls[ad.id] || '';
     const contact = saved?.contactStatus ? CONTACT_STATES[saved.contactStatus] : null;
     const message = saved ? VanCheckFormatting.message(saved.fullAnalysis) : '';
-    const state = saved
+    const state = hasAiAnalysis
       ? `<div class="status ${VERDICTS[saved.verdict]?.tone}"><strong>${VERDICTS[saved.verdict]?.icon} ${VERDICTS[saved.verdict]?.label}</strong><br>${escapeHtml(saved.summary)}${typeof saved.score === 'number' ? `<br><strong>${saved.score.toLocaleString('fr-FR')} / 10</strong>` : ''}${contact ? `<br><strong>${contact.icon} ${contact.badge}</strong>` : ''}</div>`
-      : `<div class="status">Cette annonce n’a pas encore été analysée.</div>`;
+      : saved
+        ? `<div class="status"><strong>Mon évaluation</strong><br>${typeof saved.score === 'number' ? `<strong>${saved.score.toLocaleString('fr-FR')} / 10</strong>` : 'Score à renseigner'}<br><span class="hint">Pas encore d’analyse ChatGPT.</span></div>`
+        : `<div class="status">Cette annonce n’a pas encore été analysée.</div>`;
 
     shadow.innerHTML = `<style>${styles()}</style>
       <div class="dock">
         <section class="panel" aria-label="VanCheck">
           <header class="head"><div class="eyebrow">Carnet d’achat · v${BUILD}</div><h2>${escapeHtml(ad.title || "Cette annonce")}</h2><p class="subtitle">Analyse locale · annonce ${ad.id}</p></header>
           <div class="body">${state}
-            ${saved ? `<details class="contact-card" id="personal-review"><summary>Mon avis et mes notes</summary>
-              <label for="personal-score">Mon score sur 10</label><input id="personal-score" type="number" min="0" max="10" step="any" value="${saved.score ?? ''}" style="width:100%;padding:10px;border:1px solid #bdc9c1;border-radius:10px">
-              <label for="personal-summary">Mon résumé en une phrase</label><input id="personal-summary" type="text" maxlength="180" value="${escapeHtml(saved.summary)}" style="width:100%;padding:10px;border:1px solid #bdc9c1;border-radius:10px">
-              <label for="personal-note">Note personnelle</label><textarea id="personal-note" maxlength="10000" placeholder="Impressions, points à vérifier, compte rendu de visite…">${escapeHtml(saved.personalNote || '')}</textarea>
-              <p class="hint">Tes corrections restent prioritaires sur les prochaines analyses. Ta note personnelle reste locale.</p>
+            <details class="contact-card" id="personal-review"><summary>Mon avis et mes notes</summary>
+              <label for="personal-score">Ma note sur 10</label><input id="personal-score" type="number" min="0" max="10" step="any" value="${saved?.score ?? ''}" style="width:100%;padding:10px;border:1px solid #bdc9c1;border-radius:10px">
+              ${hasAiAnalysis ? `<label for="personal-summary">Mon résumé en une phrase</label><input id="personal-summary" type="text" maxlength="180" value="${escapeHtml(saved.summary)}" style="width:100%;padding:10px;border:1px solid #bdc9c1;border-radius:10px">` : ''}
+              <label for="personal-note">Mon commentaire</label><textarea id="personal-note" maxlength="10000" placeholder="Impressions, points à vérifier, compte rendu de visite…">${escapeHtml(saved?.personalNote || '')}</textarea>
+              <p class="hint">Tu peux enregistrer ton avis sans analyse ChatGPT. Si ChatGPT analyse ensuite l’annonce, son score et son résumé seront affichés ; ton commentaire restera conservé.</p>
               <button class="btn primary" id="save-personal">Enregistrer mon avis</button>
-              ${saved.manualScore != null || saved.manualSummary != null ? '<button class="btn" id="reset-personal">Revenir au score et au résumé ChatGPT</button>' : ''}
+              ${hasAiAnalysis && (saved.manualScore != null || saved.manualSummary != null) ? '<button class="btn" id="reset-personal">Revenir au score et au résumé ChatGPT</button>' : ''}
               <p id="personal-status" role="status" aria-live="polite"></p>
-            </details>` : ''}
+            </details>
             <div id="new-flow">
               <button class="btn primary" id="analyze">Ouvrir ChatGPT avec le prompt</button>
               <p class="hint">Le prompt sera envoyé automatiquement dans ChatGPT. Garde l’onglet ChatGPT ouvert jusqu’à la fin de sa réponse. L’analyse, le score sur 10 et le message proposé seront récupérés automatiquement ici.</p>
@@ -461,24 +464,26 @@ ${VanCheckFollowup.responseFormat}`;
               </details>
               <div id="error" class="error" role="alert"></div>
             </div>
-            ${saved ? `<label>Analyse enregistrée</label><div class="analysis" style="white-space:normal">${VanCheckFormatting.markdown(saved.fullAnalysis)}</div><div class="actions"><button class="btn" id="replace">Remplacer</button><button class="btn" id="delete">Supprimer</button></div><label for="seller-message">Message au vendeur — texte exact à envoyer</label><textarea id="seller-message">${escapeHtml(message)}</textarea><button class="btn primary" id="send-message">Envoyer réellement ce message</button><p id="send-status" role="status"></p>
+            ${hasAiAnalysis ? `<label>Analyse enregistrée</label><div class="analysis" style="white-space:normal">${VanCheckFormatting.markdown(saved.fullAnalysis)}</div><div class="actions"><button class="btn" id="replace">Remplacer</button><button class="btn" id="delete">Supprimer</button></div><label for="seller-message">Message au vendeur — texte exact à envoyer</label><textarea id="seller-message">${escapeHtml(message)}</textarea><button class="btn primary" id="send-message">Envoyer réellement ce message</button><p id="send-status" role="status"></p>
               <div class="contact-card"><p class="contact-title">Suivi de conversation</p><p class="contact-subtitle">La première position est choisie automatiquement après ton envoi.</p><div class="contact-switch"><button class="contact-choice waiting ${saved.contactStatus === 'WAITING_SELLER' ? 'active' : ''}" data-contact-state="WAITING_SELLER">↗ En attente de réponse</button><button class="contact-choice reply ${saved.contactStatus === 'WAITING_ME' ? 'active' : ''}" data-contact-state="WAITING_ME">● Il attend ma réponse</button></div><button class="contact-clear" id="clear-contact">Retirer l’état de contact</button></div>
               <label for="chat-url">Conversation ChatGPT liée</label><div class="chat-link-row"><input id="chat-url" type="url" value="${escapeHtml(conversationUrl)}" placeholder="https://chatgpt.com/.../c/..."><button class="btn" id="save-chat-url">Lier</button></div><p class="hint">Le lien est enregistré automatiquement dès que la conversation ChatGPT est créée. Tu peux aussi le corriger ici.</p><p id="chat-url-status" role="status"></p>` : ""}
           </div>
         </section>
-        <button class="launcher" aria-expanded="false"><span class="van">▰</span>${saved ? VERDICTS[saved.verdict]?.label : "Analyser l’annonce"}</button>
+        <button class="launcher" aria-expanded="false"><span class="van">▰</span>${hasAiAnalysis ? VERDICTS[saved.verdict]?.label : saved ? "Mon avis" : "Analyser l’annonce"}</button>
       </div>`;
 
     shadow.querySelector('#save-personal')?.addEventListener('click', async () => {
       const status = shadow.querySelector('#personal-status');
       const scoreInput = shadow.querySelector('#personal-score');
-      const summary = shadow.querySelector('#personal-summary').value.replace(/\s+/g, ' ').trim();
+      const summaryInput = shadow.querySelector('#personal-summary');
+      const summary = summaryInput?.value.replace(/\s+/g, ' ').trim();
       const patch = { personalNote: shadow.querySelector('#personal-note').value };
-      if (!scoreInput.checkValidity() || (scoreInput.value === '' && saved.score != null)) { status.textContent = 'Renseigne un score entre 0 et 10.'; return; }
-      if (scoreInput.value !== '' && Number(scoreInput.value) !== saved.score) patch.score = Number(scoreInput.value);
-      if (summary !== saved.summary) patch.summary = summary;
+      if (!scoreInput.checkValidity() || scoreInput.value === '') { status.textContent = 'Renseigne une note entre 0 et 10.'; return; }
+      if (Number(scoreInput.value) !== saved?.score) patch.score = Number(scoreInput.value);
+      if (summaryInput && summary !== saved.summary) patch.summary = summary;
       try {
-        const result = await chrome.runtime.sendMessage({ type: 'VANCHECK_REVIEW', adId: ad.id, patch });
+        const result = await chrome.runtime.sendMessage({ type: 'VANCHECK_REVIEW', adId: ad.id, patch,
+          metadata: { title: ad.title, price: ad.price, url: ad.url } });
         if (!result?.ok) throw new Error(result?.error || 'Enregistrement impossible.');
         showPageNotice('Ton avis et ta note personnelle sont enregistrés.', 'success');
       } catch (error) { status.textContent = error.message; }
@@ -554,7 +559,7 @@ ${VanCheckFollowup.responseFormat}`;
       panel.classList.toggle("open");
       launcher.setAttribute("aria-expanded", String(panel.classList.contains("open")));
     });
-    if (saved) shadow.querySelector("#new-flow").style.display = "none";
+    if (hasAiAnalysis) shadow.querySelector("#new-flow").style.display = "none";
     shadow.querySelector("#replace")?.addEventListener("click", () => shadow.querySelector("#new-flow").style.display = "block");
     shadow.querySelector("#analyze").addEventListener("click", async event => {
       const button = event.currentTarget;

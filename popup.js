@@ -6,7 +6,8 @@ const META = {
 };
 const CONTACT_META = {
   WAITING_SELLER: "En attente de réponse",
-  WAITING_ME: "À moi de répondre"
+  WAITING_ME: "À moi de répondre",
+  DISMISSED: "Conversation non suivie"
 };
 
 const $ = selector => document.querySelector(selector);

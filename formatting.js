@@ -21,4 +21,5 @@
     return section ? section[1].trim().replace(/^```[^\n]*\n|\n```$/g,'').replace(/^> ?/gm,'') : '';
   }
   globalThis.VanCheckFormatting = { markdown, message };
+  if (typeof module !== 'undefined') module.exports = { markdown, message };
 })();

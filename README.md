@@ -79,7 +79,7 @@ Les données envoyées à Leboncoin et à ChatGPT restent soumises à leurs poli
 
 - L'extraction dépend de la structure HTML de Leboncoin et de ChatGPT, qui peut évoluer sans préavis.
 - Seuls les messages actuellement chargés dans la page Leboncoin peuvent être analysés.
-- Les pièces jointes sont limitées à 6 Mo au total par transfert.
+- Les pièces jointes sont limitées à 6 Mo au total par transfert. Les photos ne sont compressées que lorsque leur poids cumulé dépasse cette limite ; les PDF et les transferts déjà sous la limite restent inchangés.
 - Une republication Leboncoin possédant un nouvel identifiant est considérée comme une nouvelle annonce.
 - L'analyse générée ne remplace ni une inspection mécanique, ni un contrôle administratif, ni l'avis d'un professionnel.
 

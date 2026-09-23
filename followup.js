@@ -2,7 +2,11 @@
   'use strict';
   const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
   const responseFormat = `CRITÈRE D'AMÉNAGEMENT COMPLÉMENTAIRE
-Je veux au minimum 1,80 m de largeur habitable réellement disponible après isolation et habillage. C'est un critère obligatoire et éliminatoire. Distingue toujours largeur extérieure, largeur intérieure brute et largeur nette réellement disponible après travaux. Ne valide jamais ce critère à partir de la seule largeur extérieure ou d'une estimation non étayée. Si les dimensions ou l'épaisseur d'isolation ne sont pas connues, classe l'annonce « A VERIFIER » et demande la mesure intérieure utile nécessaire. Si la largeur nette après isolation est confirmée inférieure à 1,80 m, classe l'annonce « A EVITER », même si ses autres caractéristiques sont favorables.
+POINT D'ATTENTION — LARGEUR INTÉRIEURE
+La largeur habitable réellement disponible après isolation et habillage n'est pas un critère éliminatoire. Distingue toujours largeur extérieure, largeur intérieure brute et largeur nette réellement disponible après travaux. Si la largeur nette est inférieure à environ 165–170 cm, signale-le explicitement comme un point d'attention : cela peut compliquer l'aménagement et le confort, et préviens-moi dans le résumé et l'analyse. Si les dimensions ou l'épaisseur d'isolation ne sont pas connues, indique que la mesure intérieure utile reste à vérifier, sans en déduire à elle seule un verdict défavorable.
+
+CONTRAINTE DE GABARIT — L2H2
+J'accepte un véhicule en L2H2 uniquement si sa longueur totale ne dépasse pas 5,60 m, maximum strict. Si une annonce L2H2 indique une longueur supérieure à 5,60 m, signale-le comme incompatible avec mon projet et ne le recommande pas. Si la longueur totale n'est pas confirmée, demande-la ou classe ce point à vérifier avant de conclure.
 
 Commence par ces lignes (une seule valeur pour VERDICT) :
 VERDICT: INTERESSANT | A VERIFIER | A EVITER
@@ -10,7 +14,7 @@ SCORE: nombre de 0 à 10, éventuellement décimal, suivi de /10
 RESUME: une phrase concrète de 140 caractères maximum
 ANALYSE:
 Donne ton avis et explique le score sur 10, en tenant compte de mon projet, du prix, de l'état et des preuves disponibles. Garde les mêmes critères de notation au fil des échanges et explique toute évolution du score. Ce score est une appréciation de l'annonce, pas une garantie mécanique.
-Si une réponse complémentaire est utile, termine par un message court, prêt à envoyer, encadré par MESSAGE_VENDEUR_DEBUT et MESSAGE_VENDEUR_FIN sur des lignes distinctes. Sinon, omets ce bloc.
+Si une réponse complémentaire est utile, termine par un message court, prêt à envoyer, encadré par MESSAGE_VENDEUR_DEBUT et MESSAGE_VENDEUR_FIN sur des lignes distinctes. N'écris jamais un gros paragraphe : utilise des phrases courtes et, si plusieurs questions sont nécessaires, sépare-les par des retours à la ligne ou de très courts paragraphes pour que le message soit agréable à lire. Sinon, omets ce bloc.
 Termine toute ta réponse par la ligne VANCHECK_ANALYSE_FIN.`;
 
   function parseResponse(original) {

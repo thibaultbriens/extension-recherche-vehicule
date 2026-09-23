@@ -25,6 +25,23 @@ test('simultaneous acknowledgments and contact updates preserve both histories',
   assert.deepEqual(data.analyses['1234567890'].followup.sentIds, ['old', 'one', 'two', 'three']);
   assert.equal(data.analyses['1234567890'].contactStatus, 'WAITING_SELLER');
 });
+test('a dismissed reminder is retained without changing the conversation status', async () => {
+  const { data, send } = setup();
+  await send({ type: 'VANCHECK_DISMISS_ANALYSIS', adId: '1234567890', ids: ['seller-reply'] }, 'https://www.leboncoin.fr');
+  assert.deepEqual(data.analyses['1234567890'].followup.dismissedIds, ['seller-reply']);
+  assert.equal(data.analyses['1234567890'].contactStatus, 'WAITING_ME');
+});
+test('a muted conversation stays muted when Leboncoin refreshes its status and can be resumed', async () => {
+  const { data, send } = setup();
+  await send({ type: 'VANCHECK_MUTE_CONVERSATION', adId: '1234567890' }, 'https://www.leboncoin.fr');
+  assert.equal(data.analyses['1234567890'].contactStatus, 'DISMISSED');
+  assert.equal(data.analyses['1234567890'].followup.muted, true);
+  await send({ type: 'VANCHECK_CONTACT', adId: '1234567890', conversationId: 'conversation', lastId: 'later', status: 'WAITING_ME' }, 'https://www.leboncoin.fr');
+  assert.equal(data.analyses['1234567890'].contactStatus, 'DISMISSED');
+  await send({ type: 'VANCHECK_RESUME_CONVERSATION', adId: '1234567890', status: 'WAITING_ME' }, 'https://www.leboncoin.fr');
+  assert.equal(data.analyses['1234567890'].contactStatus, 'WAITING_ME');
+  assert.equal(data.analyses['1234567890'].followup.muted, undefined);
+});
 test('late analyses cannot overwrite a more recent score or erase contact state', async () => {
   const { data, send } = setup();
   await send({ type: 'VANCHECK_ANALYSIS', adId: '1234567890', analysis: { score: 8 }, metadata: {}, requestedAt: 20 });
@@ -32,6 +49,15 @@ test('late analyses cannot overwrite a more recent score or erase contact state'
   assert.equal(data.analyses['1234567890'].score, 8);
   assert.equal(data.analyses['1234567890'].contactStatus, 'WAITING_ME');
   assert.deepEqual(data.analyses['1234567890'].followup.sentIds, ['old']);
+});
+test('a follow-up stays pending until analysis completes and remembers the sent proposal', async () => {
+  const { data, send } = setup();
+  await send({ type: 'VANCHECK_ACK', adId: '1234567890', ids: ['reply'] });
+  assert.equal(data.analyses['1234567890'].followup.analysisPending, true);
+  await send({ type: 'VANCHECK_ANALYSIS', adId: '1234567890', analysis: { score: 7, summary: 'Réponse analysée' }, metadata: {}, requestedAt: 20 });
+  assert.equal(data.analyses['1234567890'].followup.analysisPending, false);
+  await send({ type: 'VANCHECK_CONTACT', adId: '1234567890', conversationId: 'conversation', lastId: 'last', status: 'WAITING_SELLER', lastOutboundMessage: 'Merci pour votre réponse.' }, 'https://www.leboncoin.fr');
+  assert.equal(data.analyses['1234567890'].lastOutboundMessage, 'Merci pour votre réponse.');
 });
 test('attachment fetch restricts host and MIME, upgrades HTTPS and returns actual bytes', async () => {
   let called;
@@ -100,6 +126,19 @@ test('saving a personal note alone does not freeze the automatic score or summar
   assert.equal(data.analyses[adId].score, 9);
   assert.equal(data.analyses[adId].summary, 'Bon historique');
   assert.equal(data.analyses[adId].personalNote, 'Essai prévu lundi');
+});
+
+test('a manual review can create a listing, and its first ChatGPT analysis takes precedence', async () => {
+  const { data, send } = setup();
+  const adId = '9876543210';
+  await send({ type: 'VANCHECK_REVIEW', adId, metadata: { title: 'Fourgon évalué à la main' }, patch: { score: 3.5, personalNote: 'Rouille à contrôler.' } }, 'https://www.leboncoin.fr');
+  assert.equal(data.analyses[adId].score, 3.5);
+  assert.equal(data.analyses[adId].personalNote, 'Rouille à contrôler.');
+  await send({ type: 'VANCHECK_ANALYSIS', adId, requestedAt: 2, analysis: { score: 8, summary: 'Historique rassurant' } });
+  assert.equal(data.analyses[adId].score, 8);
+  assert.equal(data.analyses[adId].summary, 'Historique rassurant');
+  assert.equal(data.analyses[adId].manualScore, undefined);
+  assert.equal(data.analyses[adId].personalNote, 'Rouille à contrôler.');
 });
 
 test('invalid personal edits fail atomically and ChatGPT cannot modify personal fields through the review endpoint', async () => {

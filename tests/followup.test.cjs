@@ -42,11 +42,25 @@ test('followups require a real ChatGPT conversation and valid Leboncoin conversa
   assert.equal(F.conversationId('/ad/utilitaires/1234567890'), null);
 });
 
-test('shared analysis instructions and followups enforce the minimum usable width after insulation', () => {
-  assert.match(F.responseFormat, /au minimum 1,80 m de largeur habitable réellement disponible après isolation et habillage/);
-  assert.match(F.responseFormat, /critère obligatoire et éliminatoire/);
-  assert.match(F.responseFormat, /confirmée inférieure à 1,80 m, classe l'annonce « A EVITER »/);
-  assert.match(F.responseFormat, /dimensions.+ne sont pas connues, classe l'annonce « A VERIFIER »/);
+test('shared analysis instructions flag narrow usable width without making it eliminatory', () => {
+  assert.doesNotMatch(F.responseFormat, /1,80 m|critère obligatoire et éliminatoire|classe l'annonce « A EVITER »/);
+  assert.match(F.responseFormat, /inférieure à environ 165–170 cm/);
+  assert.match(F.responseFormat, /point d'attention/);
+  assert.match(F.responseFormat, /préviens-moi dans le résumé et l'analyse/);
+  assert.match(F.responseFormat, /mesure intérieure utile reste à vérifier/);
   const prompt = F.buildFollowupPrompt('1234567890', 'ref', []);
-  assert.match(prompt, /au minimum 1,80 m de largeur habitable réellement disponible après isolation/);
+  assert.match(prompt, /inférieure à environ 165–170 cm/);
+});
+
+test('shared analysis instructions accept L2H2 only up to 5.60 m total length', () => {
+  assert.match(F.responseFormat, /L2H2 uniquement si sa longueur totale ne dépasse pas 5,60 m/);
+  assert.match(F.responseFormat, /longueur supérieure à 5,60 m, signale-le comme incompatible/);
+  const prompt = F.buildFollowupPrompt('1234567890', 'ref', []);
+  assert.match(prompt, /L2H2 uniquement si sa longueur totale ne dépasse pas 5,60 m/);
+});
+
+test('seller messages are required to remain readable and not become a large paragraph', () => {
+  assert.match(F.responseFormat, /N'écris jamais un gros paragraphe/);
+  assert.match(F.responseFormat, /phrases courtes/);
+  assert.match(F.responseFormat, /retours à la ligne ou de très courts paragraphes/);
 });
